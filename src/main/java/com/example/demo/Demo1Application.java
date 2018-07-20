@@ -6,6 +6,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -17,9 +22,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class Demo1Application {
 
-	public static void main(String[] args) throws FileNotFoundException {
+	public static void main(String[] args) throws FileNotFoundException, InvocationTargetException {
 		SpringApplication.run(Demo1Application.class, args);
 		searchForName();
+		
 	}
 
 	public static void searchForName() throws FileNotFoundException {
@@ -27,9 +33,13 @@ public class Demo1Application {
         String fileName = "xmldebugger.log";
         String line = null;
         int count = 0;
-        String inputValue = "55091";
+        String inputValue = "<voicemessage";
         int rowCount = 0;
+        String status = "";
+        ArrayList list = new ArrayList();
+        
         try {
+        	
             FileReader fileReader = new FileReader(fileName);
             
             BufferedReader bufferedReader = new BufferedReader(fileReader);
@@ -40,34 +50,43 @@ public class Demo1Application {
             HSSFRow rowhead = sheet.createRow((short)rowCount);
             rowhead.createCell(0).setCellValue("phrase");
             rowhead.createCell(1).setCellValue("count");
+            rowhead.createCell(2).setCellValue("Message");
+            rowhead.createCell(3).setCellValue("Status");
             
-            do {
-            	//System.out.println("helloo....");
             	while((line = bufferedReader.readLine()) != null) {
                     //System.out.println(line);
                     
                     if(line.contains(inputValue)) {
                     	count++;
-                    	//System.out.println("yessss......"+ count);
+                    	if(line.contains("type=\"error\"")) {
+                    		status = "fail";
+                    	}else {
+                    		status = "success";
+                    	}
+                    	
+//                    	Pattern pattern = Pattern.compile("<(.*?)>");
+//                    	Matcher matcher = pattern.matcher(line);
+//                    	while (matcher.find()) {
+//                    	    //System.out.println("tag is.."+matcher.group(1));
+//                    		list.add(line);
+//                    	}
                     }
                 }   
                 
 
-                HSSFRow rowhead1 = sheet.createRow((short) ++rowCount);
-                rowhead1.createCell(0).setCellValue(inputValue);
-                rowhead1.createCell(1).setCellValue(count);
-               //System.out.println(count);
+                HSSFRow firstRow = sheet.createRow((short) ++rowCount);
+                firstRow.createCell(0).setCellValue(inputValue);
+                firstRow.createCell(1).setCellValue(count);
+                firstRow.createCell(2).setCellValue(count); //printing count instead of message as getting many messages
+                firstRow.createCell(3).setCellValue(status);
+               System.out.println(count);
                 for(int i =0 ; i< count; i++) {
-                	HSSFCell cell = rowhead1.createCell(i+2);
-                	//System.out.println(cell);
-                	cell.setCellValue(inputValue);
-                }
-                int num = Integer.parseInt(inputValue);
-                num = num+1;
-                inputValue = num + "";
-                //System.out.println(num+"sfasfasd"+inputValue);
-            }while(Integer.parseInt(inputValue) % 10 != 0);
-            
+                	HSSFRow row = sheet.createRow((short) ++rowCount);
+                	//System.out.println(line);
+                	row.createCell(2).setCellValue("asdfasd");
+                	firstRow.createCell(2).setCellValue("asdfasd"); 
+                } 
+                
             
             File excelFile = new File("abc.xls");
             FileOutputStream fileOut = new FileOutputStream(excelFile);
@@ -85,6 +104,9 @@ public class Demo1Application {
         }
         catch(IOException ex) {
             System.out.println("Error reading file '" + fileName + "'");                  
+        }
+        catch (Exception ex) {
+        	System.out.println("cant create more than 256 columns or something went wrong"+ ex);
         }
     }
 }
