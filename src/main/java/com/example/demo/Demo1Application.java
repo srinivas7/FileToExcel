@@ -7,8 +7,10 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,10 +35,21 @@ public class Demo1Application {
         String fileName = "xmldebugger.log";
         String line = null;
         int count = 0;
-        String inputValue = "<voicemessage";
+        String inputValue = ">1531121083199";
         int rowCount = 0;
         String status = "";
         ArrayList list = new ArrayList();
+        String[] parts = null; 
+        int currentIteration = 0;
+        StringBuilder str = new StringBuilder(inputValue);
+        System.out.println(str.substring(1));
+        BigInteger  enteredId = new BigInteger(str.substring(1));
+        
+        System.out.println("Enter number of iterations: ");
+        Scanner scanner = new Scanner(System.in);
+        int iterations = scanner.nextInt();
+        System.out.println("entered iterations are... " + iterations);
+        
         
         try {
         	
@@ -50,42 +63,54 @@ public class Demo1Application {
             HSSFRow rowhead = sheet.createRow((short)rowCount);
             rowhead.createCell(0).setCellValue("phrase");
             rowhead.createCell(1).setCellValue("count");
-            rowhead.createCell(2).setCellValue("Message");
-            rowhead.createCell(3).setCellValue("Status");
-            
+            rowhead.createCell(3).setCellValue("Message");
+            rowhead.createCell(2).setCellValue("Status");
+            do {	
             	while((line = bufferedReader.readLine()) != null) {
                     //System.out.println(line);
                     
                     if(line.contains(inputValue)) {
                     	count++;
-                    	if(line.contains("type=\"error\"")) {
-                    		status = "fail";
-                    	}else {
+                    	if(!line.contains("type=\"error\"") && count == 6) {
                     		status = "success";
+                    	}else {
+                    		status = "fail";
                     	}
-                    	
-//                    	Pattern pattern = Pattern.compile("<(.*?)>");
-//                    	Matcher matcher = pattern.matcher(line);
-//                    	while (matcher.find()) {
-//                    	    //System.out.println("tag is.."+matcher.group(1));
-//                    		list.add(line);
-//                    	}
+                    
+                    	Pattern pattern = Pattern.compile("<(.*?)>");
+                    	Matcher matcher = pattern.matcher(line);
+                    	parts = line.split(": ");
+                     	System.out.println(parts[1]);
+                     	
+                    	while (matcher.find()) {
+                    	    //System.out.println("tag is.."+matcher.group(1));
+                    		//System.out.println(matcher);
+                    		
+                    		//System.out.println("line is ..."+line);
+                    		list.add(line);
+                    	}
                     }
                 }   
-                
-
-                HSSFRow firstRow = sheet.createRow((short) ++rowCount);
-                firstRow.createCell(0).setCellValue(inputValue);
-                firstRow.createCell(1).setCellValue(count);
-                firstRow.createCell(2).setCellValue(count); //printing count instead of message as getting many messages
-                firstRow.createCell(3).setCellValue(status);
-               System.out.println(count);
-                for(int i =0 ; i< count; i++) {
-                	HSSFRow row = sheet.createRow((short) ++rowCount);
-                	//System.out.println(line);
-                	row.createCell(2).setCellValue("asdfasd");
-                	firstRow.createCell(2).setCellValue("asdfasd"); 
-                } 
+            	currentIteration++;
+            	enteredId = enteredId.add(BigInteger.ONE);
+            	inputValue = ">"+enteredId;
+            	System.out.println(currentIteration+ "..."+inputValue);
+            	
+            	 HSSFRow firstRow = sheet.createRow((short) ++rowCount);
+                 firstRow.createCell(0).setCellValue(inputValue);
+                 firstRow.createCell(1).setCellValue(count);
+                 firstRow.createCell(3).setCellValue(parts[1]); //printing count instead of message as getting many messages
+                 firstRow.createCell(2).setCellValue(status);
+                //System.out.println(count);
+                 for(int i =0 ; i< count; i++) {
+                 	HSSFRow row = sheet.createRow((short) ++rowCount);
+                 	//System.out.println(line);
+                 	row.createCell(3).setCellValue(parts[1]);
+                 	firstRow.createCell(3).setCellValue(parts[1]); 
+                 } 
+                 
+            }while(currentIteration < iterations);
+               
                 
             
             File excelFile = new File("abc.xls");
