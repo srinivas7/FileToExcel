@@ -38,7 +38,6 @@ public class Demo1Application {
         String inputValue = ">1531121083199";
         int rowCount = 0;
         String status = "";
-        ArrayList list = new ArrayList();
         String[] parts = null; 
         int currentIteration = 0;
         StringBuilder str = new StringBuilder(inputValue);
@@ -53,9 +52,8 @@ public class Demo1Application {
         
         try {
         	
-            FileReader fileReader = new FileReader(fileName);
-            
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            FileReader fileReader = null;
+            BufferedReader bufferedReader = null;
             
             HSSFWorkbook workbook = new HSSFWorkbook();
             HSSFSheet sheet = workbook.createSheet("FirstSheet");  
@@ -66,8 +64,10 @@ public class Demo1Application {
             rowhead.createCell(3).setCellValue("Message");
             rowhead.createCell(2).setCellValue("Status");
             do {	
+            	fileReader =  new FileReader(fileName);
+            	bufferedReader = new BufferedReader(fileReader);
+            	System.out.println(bufferedReader.readLine());
             	while((line = bufferedReader.readLine()) != null) {
-                    //System.out.println(line);
                     
                     if(line.contains(inputValue)) {
                     	count++;
@@ -79,36 +79,27 @@ public class Demo1Application {
                     
                     	Pattern pattern = Pattern.compile("<(.*?)>");
                     	Matcher matcher = pattern.matcher(line);
-                    	parts = line.split(": ");
-                     	System.out.println(parts[1]);
-                     	
-                    	while (matcher.find()) {
-                    	    //System.out.println("tag is.."+matcher.group(1));
-                    		//System.out.println(matcher);
-                    		
-                    		//System.out.println("line is ..."+line);
-                    		list.add(line);
-                    	}
+                    	parts = line.split(": "); 
                     }
                 }   
-            	currentIteration++;
-            	enteredId = enteredId.add(BigInteger.ONE);
-            	inputValue = ">"+enteredId;
-            	System.out.println(currentIteration+ "..."+inputValue);
+            	
             	
             	 HSSFRow firstRow = sheet.createRow((short) ++rowCount);
                  firstRow.createCell(0).setCellValue(inputValue);
                  firstRow.createCell(1).setCellValue(count);
                  firstRow.createCell(3).setCellValue(parts[1]); //printing count instead of message as getting many messages
                  firstRow.createCell(2).setCellValue(status);
-                //System.out.println(count);
+                 
+                 currentIteration++;
+                 enteredId = enteredId.add(BigInteger.ONE);
+             	 inputValue = ">"+enteredId;
+             	
                  for(int i =0 ; i< count; i++) {
                  	HSSFRow row = sheet.createRow((short) ++rowCount);
-                 	//System.out.println(line);
                  	row.createCell(3).setCellValue(parts[1]);
                  	firstRow.createCell(3).setCellValue(parts[1]); 
                  } 
-                 
+                 count = 0;
             }while(currentIteration < iterations);
                
                 
@@ -120,7 +111,6 @@ public class Demo1Application {
             //workbook.clone();
             
             System.out.println("Your excel file has been generated!");
-            
             
             bufferedReader.close();         
         }
