@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,29 +33,27 @@ public class Demo1Application {
 
 	public static void searchForName() throws FileNotFoundException {
 		
+		
         String fileName = "xmldebugger.log";
         String line = null;
         int count = 0;
         String inputValue = ">1531121083199";
         int rowCount = 0;
-        String status = "";
+        
         String[] parts = null; 
         int currentIteration = 0;
         StringBuilder str = new StringBuilder(inputValue);
         System.out.println(str.substring(1));
         BigInteger  enteredId = new BigInteger(str.substring(1));
-        
         System.out.println("Enter number of iterations: ");
         Scanner scanner = new Scanner(System.in);
         int iterations = scanner.nextInt();
-        System.out.println("entered iterations are... " + iterations);
         
         
         try {
         	
             FileReader fileReader = null;
             BufferedReader bufferedReader = null;
-            
             HSSFWorkbook workbook = new HSSFWorkbook();
             HSSFSheet sheet = workbook.createSheet("FirstSheet");  
 
@@ -63,7 +62,10 @@ public class Demo1Application {
             rowhead.createCell(1).setCellValue("count");
             rowhead.createCell(3).setCellValue("Message");
             rowhead.createCell(2).setCellValue("Status");
-            do {	
+            while(currentIteration < iterations){
+            	int rowIterationCount = 0;
+            	String status = "";
+            	ArrayList<String> msgList = new ArrayList<String>();
             	fileReader =  new FileReader(fileName);
             	bufferedReader = new BufferedReader(fileReader);
             	System.out.println(bufferedReader.readLine());
@@ -71,15 +73,19 @@ public class Demo1Application {
                     
                     if(line.contains(inputValue)) {
                     	count++;
-                    	if(!line.contains("type=\"error\"") && count == 6) {
-                    		status = "success";
-                    	}else {
-                    		status = "fail";
+                    	
+                    	if(status == "" || status == "success") {
+                    		if(line.contains("error")) {
+                        		status = "fail";
+                        	}else {
+                        		status = "success";
+                        	}
                     	}
                     
                     	Pattern pattern = Pattern.compile("<(.*?)>");
                     	Matcher matcher = pattern.matcher(line);
                     	parts = line.split(": "); 
+                    	msgList.add(parts[1]);
                     }
                 }   
             	
@@ -87,20 +93,30 @@ public class Demo1Application {
             	 HSSFRow firstRow = sheet.createRow((short) ++rowCount);
                  firstRow.createCell(0).setCellValue(inputValue);
                  firstRow.createCell(1).setCellValue(count);
-                 firstRow.createCell(3).setCellValue(parts[1]); //printing count instead of message as getting many messages
+                 //firstRow.createCell(3).setCellValue(parts[1]); //printing count instead of message as getting many messages
                  firstRow.createCell(2).setCellValue(status);
                  
                  currentIteration++;
                  enteredId = enteredId.add(BigInteger.ONE);
              	 inputValue = ">"+enteredId;
              	
-                 for(int i =0 ; i< count; i++) {
-                 	HSSFRow row = sheet.createRow((short) ++rowCount);
-                 	row.createCell(3).setCellValue(parts[1]);
-                 	firstRow.createCell(3).setCellValue(parts[1]); 
-                 } 
+                 Iterator<String> iterator =  msgList.iterator();
+                 System.out.println(msgList.size());
+                 while(iterator.hasNext()) {
+                	 String msg = iterator.next();
+                	 System.out.println(msg);
+                	 HSSFRow row = sheet.createRow((short) ++rowCount);
+                  	 
+                	 if(rowIterationCount < msgList.size() - 1)
+                  		 row.createCell(3).setCellValue(msg);
+                  	 
+                  	 firstRow.createCell(3).setCellValue(msg);
+                  	 rowIterationCount++;
+                 }
+                 msgList = null;
                  count = 0;
-            }while(currentIteration < iterations);
+                 rowIterationCount = 0;
+            }
                
                 
             
