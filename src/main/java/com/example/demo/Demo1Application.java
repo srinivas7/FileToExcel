@@ -36,7 +36,7 @@ public class Demo1Application {
 
 	public static void searchForName() throws FileNotFoundException {
 		
-		
+		//comment added
         String fileName = "xmldebugger.log";
         String line = null;
         int count = 0;
