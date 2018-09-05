@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,13 +26,20 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
+import java.io.File;
 @SpringBootApplication
 public class Demo1Application {
 
 	public static void main(String[] args) throws FileNotFoundException, InvocationTargetException {
 		SpringApplication.run(Demo1Application.class, args);
-		searchForName();
+		//searchForName();
+		parseXMLFile();
 		
 	}
 
@@ -180,4 +189,50 @@ public class Demo1Application {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	public static void parseXMLFile() {
+		 try {
+
+				File fXmlFile = new File("data.xml");
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = dBuilder.parse(fXmlFile);
+				Map<Integer,String> callDetailsMap = new HashMap<Integer, String>(); 
+				//optional, but recommended
+				//read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
+				doc.getDocumentElement().normalize();
+
+				System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
+						
+				NodeList nList = doc.getElementsByTagName("staff");
+						
+				System.out.println("----------------------------");
+
+				for (int temp = 0; temp < nList.getLength(); temp++) {
+
+					Node nNode = nList.item(temp);
+							
+					System.out.println("\nCurrent Element :" + nNode.getNodeName());
+							
+					if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+
+						Element eElement = (Element) nNode;
+						int callId = Integer.parseInt(eElement.getElementsByTagName("callid").item(0).getTextContent());
+						String status = eElement.getElementsByTagName("status").item(0).getTextContent();
+						System.out.println("call id: " + callId);
+						System.out.println("status : " + status);
+						callDetailsMap.put(callId, status);
+					}
+				}
+				
+				
+				for (Map.Entry<Integer, String> entry : callDetailsMap.entrySet())
+				{
+				    System.out.println(entry.getKey() + "-" + entry.getValue());
+				}
+		    } catch (Exception e) {
+		    	e.printStackTrace();
+		    }
+	}
+	
 }
