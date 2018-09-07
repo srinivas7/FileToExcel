@@ -45,7 +45,7 @@ public class Demo1Application {
 
 	public static void searchForName() throws FileNotFoundException {
 		
-		
+		//added new branch NB
         String fileName = "xmldebugger.log";
         String line = null;
         int count = 0;
